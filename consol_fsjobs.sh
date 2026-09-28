@@ -1,15 +1,20 @@
 #!/bin/sh
-# consol_fsjobs.sh
-# Usage: sbatch --dependency=afterany:<ids> consol_fsjobs.sh <colon-separated-ids>
 
-if [ -z "$1" ]; then
-    echo "Error: no job ID list provided."
-    echo "Usage: sbatch consol_fsjobs.sh <colon-separated-job-ids>"
-    exit 1
-fi
+temp1=($(squeue))
 
-deps="$1"
-cmd1="sbatch --dependency=afterany:${deps} /data/src/PyHipp_Copy/fsall-slurm.sh"
+cmd1="sbatch --dependency=afterok:"
 
-echo "$cmd1"
-eval "$cmd1"
+counter1=0
+for i in "${temp1[@]}"; do
+       if [[ "$i" == "queue1" ]]; then
+	       id1=${temp1[$counter1-1]}
+	       cmd1="${cmd1}${id1}:"
+       fi
+       counter1=$((counter1+1))
+done
+
+cmd1=${cmd1::-1}
+cmd1="${cmd1} /data/src/PyHipp/fsall-slurm.sh"
+
+echo $cmd1
+eval $cmd1
